@@ -1,0 +1,2383 @@
+{
+  "proposalVersion": 1,
+  "source": "discovery",
+  "metadata": {
+    "id": "shore.preset.vite-client-side-webapp",
+    "name": "Vite Client-Side Webapp",
+    "description": "A framework-free, server-free Vite single-page app with a pure domain core, feature slices behind public entries, and all browser platform APIs isolated in adapters. Derived from the user-supplied blueprint and verified against the observed import graph of dcassil/simpleCam.",
+    "revision": "1.0.0"
+  },
+  "modules": {
+    "pathMappings": {
+      "entry": [
+        "src/main.ts"
+      ],
+      "app": [
+        "src/app/**/*.ts"
+      ],
+      "features": [
+        "src/features/*/index.ts"
+      ],
+      "feature-internals": [
+        "src/features/*/!(index).ts",
+        "src/features/*/!(index)/**/*.ts"
+      ],
+      "ui": [
+        "src/ui/**/*.ts"
+      ],
+      "domain": [
+        "src/domain/**/*.ts"
+      ],
+      "platform": [
+        "src/platform/**/*.ts"
+      ],
+      "shared": [
+        "src/shared/**/*.ts"
+      ],
+      "styles": [
+        "src/styles/**/*.css"
+      ],
+      "node-builtins": [
+        "node:*",
+        "fs",
+        "path",
+        "os",
+        "child_process",
+        "crypto",
+        "http",
+        "https",
+        "net",
+        "stream",
+        "url",
+        "util",
+        "worker_threads"
+      ],
+      "build-tooling": [
+        "vite",
+        "vite/*",
+        "vitest",
+        "vitest/*"
+      ]
+    },
+    "moduleEvidence": {
+      "entry": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/main.ts",
+            "detail": "Single bootstrap file: imports styles, constructs the platform camera adapter, resolves #app, calls createApp."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry(src/main.ts) -> app, styles, platform, shared"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "A one-file module keeps bootstrap logic out of app. Any second bootstrap file would need the mapping widened."
+      },
+      "app": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/app/create-app.ts",
+            "detail": "Composition root wiring the app shell and the capture feature with injected platform adapter."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app -> features (ONLY via index.ts), ui, platform, shared"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "One file today; the directory mapping anticipates growth. Low cost."
+      },
+      "features": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/features/capture/index.ts",
+            "detail": "Public entry of the capture feature; re-exports mountCaptureView."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features are imported only via src/features/<name>/index.ts"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Each feature must maintain an index.ts. Small ongoing discipline cost; it is already followed."
+      },
+      "feature-internals": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/features/capture/capture-view.ts",
+            "detail": "Feature-local implementation, imported only by the capture index."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "feature-internals / Open question 1",
+            "detail": "Pattern matched by negating index.ts under src/features/*; the matcher cannot distinguish same-feature from cross-feature internals."
+          }
+        ],
+        "tradeoffs": "The two negated glob patterns are copied from the blueprint and have not been verified against the Shore Guard matcher. If they do not resolve, feature-internals becomes an empty module and the deep-import rules silently stop matching. Verify with shore-guard check after adoption."
+      },
+      "ui": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/ui/app-shell.ts",
+            "detail": "Presentational DOM shell; imports nothing internal."
+          },
+          {
+            "kind": "path",
+            "path": "src/ui/status-line.ts",
+            "detail": "Presentational status paragraph; imports nothing internal."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "ui -> domain, shared"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "UI files touch the DOM but not device APIs. The boundary is only an import boundary; DOM usage inside ui is intended."
+      },
+      "domain": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/domain/camera-state.ts",
+            "detail": "Pure types and functions for camera status; no imports, no DOM globals."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "domain -> shared; domain must not reference window, document, or navigator"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Import rules cannot detect use of window/document/navigator globals (blueprint open question 2); that part of the intent stays unenforced until a no-dom-globals rule kind exists."
+      },
+      "platform": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/platform/camera-adapter.ts",
+            "detail": "Only file that references navigator.mediaDevices; exposes a CameraAdapter interface typed with domain types."
+          },
+          {
+            "kind": "import-edge",
+            "from": "src/platform/camera-adapter.ts",
+            "to": "src/domain/camera-state.ts",
+            "detail": "camera-adapter.ts imports type CameraStatus"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "platform -> domain, shared; only platform may call browser device APIs"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "All device API access funnels through adapters, which adds an interface per capability but keeps features testable."
+      },
+      "shared": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/shared/assert.ts",
+            "detail": "Leaf utility assertDefined; imports nothing."
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "shared -> nothing internal"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Shared must stay a leaf; anything needing another layer has to move out of shared."
+      },
+      "styles": {
+        "evidence": [
+          {
+            "kind": "path",
+            "path": "src/styles/global.css",
+            "detail": "Global stylesheet imported once by src/main.ts."
+          },
+          {
+            "kind": "import-edge",
+            "from": "src/main.ts",
+            "to": "src/styles/global.css",
+            "detail": "main.ts imports the global stylesheet as a side-effect import"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry -> styles"
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Component-scoped CSS inside ui or features would not match this mapping and is not covered by any rule."
+      },
+      "node-builtins": {
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "Package-name mapping, not a directory; it exists only so runtime modules can forbid it. The builtin list is the blueprint list and may need additions."
+      },
+      "build-tooling": {
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "Package-name mapping for vite and vitest. vitest is not installed today; listing it is pre-emptive."
+      }
+    },
+    "allowedEdges": [
+      {
+        "from": "entry",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/main.ts",
+            "to": "src/app/create-app.ts",
+            "detail": "main.ts imports createApp"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry -> app is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "entry",
+        "to": "styles",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/main.ts",
+            "to": "src/styles/global.css",
+            "detail": "main.ts imports the global stylesheet as a side-effect import"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry -> styles is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "entry",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/main.ts",
+            "to": "src/platform/camera-adapter.ts",
+            "detail": "main.ts imports createMediaDevicesCamera"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry -> platform is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "entry",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/main.ts",
+            "to": "src/shared/assert.ts",
+            "detail": "main.ts imports assertDefined"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "app",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/app/create-app.ts",
+            "to": "src/features/capture/index.ts",
+            "detail": "create-app.ts imports mountCaptureView via the feature public entry (../features/capture)"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app -> features is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "app",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/app/create-app.ts",
+            "to": "src/ui/app-shell.ts",
+            "detail": "create-app.ts imports renderAppShell"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app -> ui is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "app",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/app/create-app.ts",
+            "to": "src/platform/camera-adapter.ts",
+            "detail": "create-app.ts imports type CameraAdapter"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app -> platform is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "app",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "features",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/features/capture/index.ts",
+            "to": "src/features/capture/capture-view.ts",
+            "detail": "index.ts re-exports mountCaptureView from its own internals"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features -> feature-internals is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "A feature index re-exporting its own internals is the only way to expose a public entry. The path matcher cannot tell same-feature from cross-feature internals (blueprint open question 1), so cross-feature deep imports are policed by a separate warn-stage rule rather than by this edge."
+      },
+      {
+        "from": "features",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features -> ui is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "features",
+        "to": "domain",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features -> domain is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "features",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features -> platform is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "features",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "features -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "feature-internals",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/features/capture/capture-view.ts",
+            "to": "src/ui/status-line.ts",
+            "detail": "capture-view.ts imports renderStatusLine"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "feature-internals -> ui is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "feature-internals",
+        "to": "domain",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/features/capture/capture-view.ts",
+            "to": "src/domain/camera-state.ts",
+            "detail": "capture-view.ts imports describeCameraStatus, initialCameraState, type CameraState"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "feature-internals -> domain is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "feature-internals",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/features/capture/capture-view.ts",
+            "to": "src/platform/camera-adapter.ts",
+            "detail": "capture-view.ts imports statusForUnsupported and type CameraAdapter"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "feature-internals -> platform is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "feature-internals",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "feature-internals -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "ui",
+        "to": "domain",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "ui -> domain is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "ui",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "ui -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "platform",
+        "to": "domain",
+        "evidence": [
+          {
+            "kind": "import-edge",
+            "from": "src/platform/camera-adapter.ts",
+            "to": "src/domain/camera-state.ts",
+            "detail": "camera-adapter.ts imports type CameraStatus"
+          },
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "platform -> domain is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "Observed in code and matches documented intent; keeping it allowed has no migration cost."
+      },
+      {
+        "from": "platform",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "platform -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      },
+      {
+        "from": "domain",
+        "to": "shared",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "domain -> shared is listed as an allowed downward import."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "This direction is not yet exercised by any import in the repository; it is allowed on documented intent only, so it costs nothing today and may be narrowed later if it is never used."
+      }
+    ],
+    "forbiddenEdges": [
+      {
+        "from": "app",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "app may import features ONLY via src/features/<name>/index.ts."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "create-app.ts already imports the capture feature through its index, so nothing changes today. Features must keep index.ts exports current, which is a small ongoing cost."
+      },
+      {
+        "from": "entry",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry imports app, styles, platform, shared only; features are wired by app."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "main.ts does not import features at all today. Keeps the bootstrap free of feature wiring."
+      },
+      {
+        "from": "entry",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "entry imports app, styles, platform, shared only; features are wired by app."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "main.ts does not import features at all today. Keeps the bootstrap free of feature wiring."
+      },
+      {
+        "from": "features",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; features -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "features",
+        "to": "entry",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; features -> entry would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "feature-internals",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; feature-internals -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "feature-internals",
+        "to": "entry",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; feature-internals -> entry would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "ui",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; ui -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "ui",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; ui -> features would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "ui",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; ui -> feature-internals would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "ui",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; ui -> platform would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "domain",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; domain -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "domain",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; domain -> features would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "domain",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; domain -> feature-internals would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "domain",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; domain -> ui would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "domain",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; domain -> platform would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "platform",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; platform -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "platform",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; platform -> features would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "platform",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; platform -> feature-internals would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "platform",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; platform -> ui would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "app",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> app would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "features",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> features would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "feature-internals",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> feature-internals would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "ui",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> ui would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "domain",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> domain would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "shared",
+        "to": "platform",
+        "evidence": [
+          {
+            "kind": "docs-intent",
+            "path": ".agents/task-2-layers.md",
+            "section": "Import direction is STRICT and downward only",
+            "detail": "Nothing may import upward; shared -> platform would invert the documented direction."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "Layer graph / Module semantics",
+            "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+          }
+        ],
+        "tradeoffs": "No upward import exists today (every observed edge points down the layer list), so enforcing this has zero migration cost. The cost is future friction: a shortcut upward must instead be inverted through an interface or moved to a lower layer."
+      },
+      {
+        "from": "entry",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "entry",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "app",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "app",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "features",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "features",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "feature-internals",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "feature-internals",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "ui",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "ui",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "domain",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "domain",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "platform",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "platform",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      },
+      {
+        "from": "shared",
+        "to": "node-builtins",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports a Node builtin today. A future need for Node APIs (for example a build-time script) belongs outside src/ or behind a platform adapter."
+      },
+      {
+        "from": "shared",
+        "to": "build-tooling",
+        "evidence": [
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.lib",
+            "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+            "detail": "The compile target is a browser bundle; no Node type library is included."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "tsconfig.json",
+            "key": "compilerOptions.types",
+            "value": "[\"vite/client\"]",
+            "detail": "Only Vite client ambient types are available to src/."
+          },
+          {
+            "kind": "manifest-fact",
+            "path": "package.json",
+            "key": "devDependencies",
+            "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+            "detail": "No runtime dependencies exist; vite is tooling only."
+          },
+          {
+            "kind": "path",
+            "path": "vite.config.ts",
+            "detail": "The only import of the vite package lives in the root config, outside src/."
+          },
+          {
+            "kind": "docs-intent",
+            "path": "vite_client_side_temp_blueprint.ts",
+            "section": "node-builtins / build-tooling",
+            "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+          }
+        ],
+        "tradeoffs": "No src/ file imports vite or vitest today. If tests are later colocated inside src/, the build-tooling mapping or this edge will need revisiting."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "ruleId": "architecture.app-feature-deep-imports",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/main.ts",
+          "src/app/**/*.ts"
+        ],
+        "modules": [
+          "entry",
+          "app",
+          "feature-internals"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "Entry or app code crosses the feature public-entry boundary with a deep feature import.",
+      "remediation": "Export the dependency from the feature index and import that public entry instead.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "import-edge",
+          "from": "src/app/create-app.ts",
+          "to": "src/features/capture/index.ts",
+          "detail": "create-app.ts imports mountCaptureView via the feature public entry (../features/capture)"
+        },
+        {
+          "kind": "docs-intent",
+          "path": ".agents/task-2-layers.md",
+          "section": "Import direction is STRICT and downward only",
+          "detail": "app -> features ONLY via src/features/<name>/index.ts"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Layer graph / Module semantics",
+          "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+        }
+      ],
+      "tradeoffs": "Already satisfied by create-app.ts; enforce has no migration cost."
+    },
+    {
+      "ruleId": "architecture.feature-cross-deep-imports",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/features/**/*.ts"
+        ],
+        "modules": [
+          "features",
+          "feature-internals"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "A feature reaches into the internals of another feature instead of its public entry.",
+      "remediation": "Import the other feature through its index, or move the shared piece to domain, ui, or shared.",
+      "adoptionStage": "warn",
+      "evidence": [
+        {
+          "kind": "import-edge",
+          "from": "src/features/capture/index.ts",
+          "to": "src/features/capture/capture-view.ts",
+          "detail": "index.ts re-exports mountCaptureView from its own internals"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Open question 1",
+          "detail": "Same-feature index -> internals imports also match this rule because the matcher is path-based."
+        }
+      ],
+      "tradeoffs": "Kept at warn, not enforce: the capture index legitimately imports its own internals and would be flagged if the matcher cannot exempt same-feature imports. Only one feature exists, so no cross-feature import can occur yet."
+    },
+    {
+      "ruleId": "architecture.domain-imports-browser-layers",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/domain/**/*.ts"
+        ],
+        "modules": [
+          "domain",
+          "platform",
+          "ui",
+          "features",
+          "feature-internals",
+          "app"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "Pure domain code crosses into a browser-facing layer, so it can no longer run or be tested outside the browser.",
+      "remediation": "Keep domain free of platform, ui, feature, and app imports; pass browser results in as plain domain values.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "path",
+          "path": "src/domain/camera-state.ts",
+          "detail": "Has zero imports today."
+        },
+        {
+          "kind": "docs-intent",
+          "path": ".agents/task-2-layers.md",
+          "section": "Import direction is STRICT and downward only",
+          "detail": "domain -> shared only; domain must not reference window, document, or navigator"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Layer graph / Module semantics",
+          "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+        }
+      ],
+      "tradeoffs": "No violations today. Global DOM usage inside domain remains undetected by this rule (blueprint open question 2)."
+    },
+    {
+      "ruleId": "architecture.ui-imports-platform-or-features",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/ui/**/*.ts"
+        ],
+        "modules": [
+          "ui",
+          "platform",
+          "features",
+          "feature-internals",
+          "app"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "Presentational UI crosses the adapter boundary by importing platform, feature, or app code.",
+      "remediation": "Receive data and callbacks as parameters; let the feature or app layer own platform access.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "path",
+          "path": "src/ui/app-shell.ts",
+          "detail": "Has zero imports today."
+        },
+        {
+          "kind": "path",
+          "path": "src/ui/status-line.ts",
+          "detail": "Has zero imports today."
+        },
+        {
+          "kind": "docs-intent",
+          "path": ".agents/task-2-layers.md",
+          "section": "Import direction is STRICT and downward only",
+          "detail": "ui -> domain, shared"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Layer graph / Module semantics",
+          "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+        }
+      ],
+      "tradeoffs": "No violations today. UI components must take callbacks rather than call adapters, which keeps them dumb but adds parameter plumbing."
+    },
+    {
+      "ruleId": "architecture.platform-imports-upward",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/platform/**/*.ts"
+        ],
+        "modules": [
+          "platform",
+          "app",
+          "features",
+          "feature-internals",
+          "ui"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "A platform adapter imports app, feature, or ui code, inverting the dependency direction.",
+      "remediation": "Expose a framework-neutral interface from the adapter and let higher layers call it.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "import-edge",
+          "from": "src/platform/camera-adapter.ts",
+          "to": "src/domain/camera-state.ts",
+          "detail": "camera-adapter.ts imports type CameraStatus"
+        },
+        {
+          "kind": "docs-intent",
+          "path": ".agents/task-2-layers.md",
+          "section": "Import direction is STRICT and downward only",
+          "detail": "platform -> domain, shared"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Layer graph / Module semantics",
+          "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+        }
+      ],
+      "tradeoffs": "camera-adapter.ts imports only domain today. No migration cost."
+    },
+    {
+      "ruleId": "architecture.shared-imports-internal",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/shared/**/*.ts"
+        ],
+        "modules": [
+          "shared",
+          "app",
+          "features",
+          "feature-internals",
+          "ui",
+          "domain",
+          "platform"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "A shared leaf utility imports another internal layer, so it is no longer a leaf.",
+      "remediation": "Move the code into the layer it depends on, or remove the dependency.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "path",
+          "path": "src/shared/assert.ts",
+          "detail": "Has zero imports today."
+        },
+        {
+          "kind": "docs-intent",
+          "path": ".agents/task-2-layers.md",
+          "section": "Import direction is STRICT and downward only",
+          "detail": "shared -> nothing internal"
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "Layer graph / Module semantics",
+          "detail": "User-supplied Vite client-side blueprint states the same layer graph; no catalog preset matches a framework-free, server-free Vite SPA."
+        }
+      ],
+      "tradeoffs": "No violations today."
+    },
+    {
+      "ruleId": "architecture.runtime-imports-node-builtins",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/**/*.ts"
+        ],
+        "modules": [
+          "entry",
+          "app",
+          "features",
+          "feature-internals",
+          "ui",
+          "domain",
+          "platform",
+          "shared",
+          "node-builtins"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "Browser runtime code imports a Node.js builtin that does not exist in the client bundle.",
+      "remediation": "Use a Web API equivalent or a platform adapter; Node builtins belong only in config and tooling.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "manifest-fact",
+          "path": "tsconfig.json",
+          "key": "compilerOptions.lib",
+          "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+          "detail": "The compile target is a browser bundle; no Node type library is included."
+        },
+        {
+          "kind": "manifest-fact",
+          "path": "tsconfig.json",
+          "key": "compilerOptions.types",
+          "value": "[\"vite/client\"]",
+          "detail": "Only Vite client ambient types are available to src/."
+        },
+        {
+          "kind": "manifest-fact",
+          "path": "package.json",
+          "key": "devDependencies",
+          "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+          "detail": "No runtime dependencies exist; vite is tooling only."
+        },
+        {
+          "kind": "path",
+          "path": "vite.config.ts",
+          "detail": "The only import of the vite package lives in the root config, outside src/."
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "node-builtins / build-tooling",
+          "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+        }
+      ],
+      "tradeoffs": "No src/ file imports a Node builtin today. Such an import would also fail the Vite build, so this rule mostly gives an earlier, clearer diagnostic."
+    },
+    {
+      "ruleId": "architecture.runtime-imports-build-tooling",
+      "kind": "import-boundary",
+      "scope": {
+        "paths": [
+          "src/**/*.ts"
+        ],
+        "modules": [
+          "entry",
+          "app",
+          "features",
+          "feature-internals",
+          "ui",
+          "domain",
+          "platform",
+          "shared",
+          "build-tooling"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "Runtime code imports the bundler or test runner package.",
+      "remediation": "Keep Vite and Vitest imports in vite.config.ts and test files outside src.",
+      "adoptionStage": "enforce",
+      "evidence": [
+        {
+          "kind": "manifest-fact",
+          "path": "tsconfig.json",
+          "key": "compilerOptions.lib",
+          "value": "[\"ES2022\",\"DOM\",\"DOM.Iterable\"]",
+          "detail": "The compile target is a browser bundle; no Node type library is included."
+        },
+        {
+          "kind": "manifest-fact",
+          "path": "tsconfig.json",
+          "key": "compilerOptions.types",
+          "value": "[\"vite/client\"]",
+          "detail": "Only Vite client ambient types are available to src/."
+        },
+        {
+          "kind": "manifest-fact",
+          "path": "package.json",
+          "key": "devDependencies",
+          "value": "{\"typescript\":\"~5.9.3\",\"vite\":\"^7.1.0\"}",
+          "detail": "No runtime dependencies exist; vite is tooling only."
+        },
+        {
+          "kind": "path",
+          "path": "vite.config.ts",
+          "detail": "The only import of the vite package lives in the root config, outside src/."
+        },
+        {
+          "kind": "docs-intent",
+          "path": "vite_client_side_temp_blueprint.ts",
+          "section": "node-builtins / build-tooling",
+          "detail": "Blueprint forbids Node builtins and build tooling from all runtime modules because this is a browser-only bundle."
+        }
+      ],
+      "tradeoffs": "src/vite-env.d.ts references vite/client types via a triple-slash directive, not an import, so it should not match. If colocated tests are adopted later, this rule needs a test-path exemption."
+    },
+    {
+      "ruleId": "architecture.feature-cycles",
+      "kind": "no-cycles",
+      "scope": {
+        "paths": [
+          "src/features/**/*.ts",
+          "src/domain/**/*.ts",
+          "src/platform/**/*.ts"
+        ]
+      },
+      "severity": "error",
+      "diagnostic": "An import cycle exists between feature, domain, or platform modules.",
+      "remediation": "Break the cycle by extracting the shared piece into domain or shared, or by inverting one dependency through an interface.",
+      "adoptionStage": "warn",
+      "evidence": [
+        {
+          "kind": "import-edge",
+          "from": "src/features/capture/capture-view.ts",
+          "to": "src/platform/camera-adapter.ts",
+          "detail": "capture-view.ts imports statusForUnsupported and type CameraAdapter"
+        },
+        {
+          "kind": "import-edge",
+          "from": "src/platform/camera-adapter.ts",
+          "to": "src/domain/camera-state.ts",
+          "detail": "camera-adapter.ts imports type CameraStatus"
+        },
+        {
+          "kind": "import-edge",
+          "from": "src/features/capture/capture-view.ts",
+          "to": "src/domain/camera-state.ts",
+          "detail": "capture-view.ts imports describeCameraStatus, initialCameraState, type CameraState"
+        }
+      ],
+      "tradeoffs": "The observed graph is acyclic. Kept at warn until no-cycles enforcement is confirmed working against this repository."
+    },
+    {
+      "ruleId": "architecture.orphan-modules",
+      "kind": "no-orphans",
+      "scope": {
+        "paths": [
+          "src/**/*.ts"
+        ]
+      },
+      "severity": "warning",
+      "diagnostic": "A source module is not reachable from src/main.ts.",
+      "remediation": "Wire the module into a feature or app, or delete it.",
+      "adoptionStage": "observe",
+      "evidence": [
+        {
+          "kind": "path",
+          "path": "src/main.ts",
+          "detail": "Sole bundle entry; every other src file is reachable from it today."
+        },
+        {
+          "kind": "path",
+          "path": "src/vite-env.d.ts",
+          "detail": "Ambient declaration file with no importers; would be reported as an orphan."
+        }
+      ],
+      "tradeoffs": "Observe only. vite-env.d.ts is a known false positive, and future type-only declaration files would be too. Promote only after an exemption for .d.ts files is confirmed."
+    }
+  ]
+}

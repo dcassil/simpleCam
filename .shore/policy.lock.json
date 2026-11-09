@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "pack": {
+    "id": "shore.preset.vite-client-side-webapp",
+    "revision": "1.0.0"
+  },
+  "contentHash": "sha256:dbc6a3cba54fe63113d2786a2bc9a760056518ef8603be20629e324b3fa7d56e",
+  "approval": {
+    "approvedBy": "Daniel Cassil",
+    "approvedAt": "2026-11-09T18:26:44.033Z",
+    "rationale": "Vite client-side blueprint; no catalog preset matches a framework-free server-free Vite SPA"
+  }
+}
